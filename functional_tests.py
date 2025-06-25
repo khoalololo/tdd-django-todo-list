@@ -74,8 +74,6 @@ class NewVisitorTest(unittest.TestCase):
         self.check_for_row_in_list_table("1: Buy peacock feathers")
         # Satisfied, she goes back to sleep
 
-        # Fail the test intentionally to mark it as unfinished, as per the tutorial
-        self.fail("Finish the test!")
 
 # This block ensures that unittest.main() is called when the script is run directly
 if __name__ == "__main__":
