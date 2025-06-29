@@ -1,10 +1,13 @@
 import unittest # Import the unittest module
 import time
 from selenium import webdriver
+from selenium.common import NoSuchElementException, WebDriverException
 from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from django.test import LiveServerTestCase
+
+MAX_WAIT = 5
 
 # --- Configuration for GeckoDriver (adjust path as needed) ---
 # IMPORTANT: Replace with the ACTUAL full path to your geckodriver executable
@@ -29,10 +32,19 @@ class NewVisitorTest(LiveServerTestCase):
     def tearDown(self):
         self.browser.quit() # Quits the browser automatically
 
-    def check_for_row_in_list_table(self, row_text):
-        table = self.browser.find_element(By.ID, "id_list_table")
-        rows = table.find_elements(By.TAG_NAME, "tr")
-        self.assertIn(row_text, [row.text for row in rows])
+    def wait_for_row_in_list_table(self, row_text):
+        start_time = time.time()
+        while True:
+            try:
+                table = self.browser.find_element(By.ID, "id_list_table")
+                rows = table.find_elements(By.TAG_NAME, "tr")
+                self.assertIn(row_text, [row.text for row in rows])
+                return
+            except (AssertionError, WebDriverException):
+                if time.time() - start_time > MAX_WAIT:
+                    raise
+                time.sleep(0.5)
+
 
     # This is our first functional test method. Test methods must start with 'test_'
     def test_can_start_a_todo_list(self):
@@ -57,7 +69,7 @@ class NewVisitorTest(LiveServerTestCase):
         # When she hits enter, the page updates, and now the page lists
         # "1: Buy peacock feathers" as an item in a to-do list
         inputbox.send_keys(Keys.ENTER)
-        time.sleep(1)
+        self.wait_for_row_in_list_table("1: Buy peacock feathers")
 
         table = self.browser.find_element(By.ID, "id_list_table")
         rows = table.find_elements(By.TAG_NAME, "tr")
@@ -68,11 +80,10 @@ class NewVisitorTest(LiveServerTestCase):
         inputbox = self.browser.find_element(By.ID, "id_new_item")
         inputbox.send_keys("Use peacock feathers to make a fly")
         inputbox.send_keys(Keys.ENTER)
-        time.sleep(1)
 
         # The page updates again, and now shows both items on her list
-        self.check_for_row_in_list_table("2: Use peacock feathers to make a fly")
-        self.check_for_row_in_list_table("1: Buy peacock feathers")
+        self.wait_for_row_in_list_table("2: Use peacock feathers to make a fly")
+        self.wait_for_row_in_list_table("1: Buy peacock feathers")
         # Satisfied, she goes back to sleep
 
 
