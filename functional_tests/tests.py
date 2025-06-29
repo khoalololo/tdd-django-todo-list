@@ -4,6 +4,7 @@ from selenium import webdriver
 from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
+from django.test import LiveServerTestCase
 
 # --- Configuration for GeckoDriver (adjust path as needed) ---
 # IMPORTANT: Replace with the ACTUAL full path to your geckodriver executable
@@ -14,7 +15,7 @@ geckodriver_path = None # Set to your path if not in system PATH
 # --- End Configuration ---
 
 # Define a test class that inherits from unittest.TestCase
-class NewVisitorTest(unittest.TestCase):
+class NewVisitorTest(LiveServerTestCase):
     # setUp method runs before each test method (e.g., test_can_start_a_todo_list)
     def setUp(self):
         # Initialize the browser. If geckodriver_path is set, use it.
@@ -37,7 +38,7 @@ class NewVisitorTest(unittest.TestCase):
     def test_can_start_a_todo_list(self):
         # Edith has heard about a cool new online to-do app.
         # She goes to check out its homepage
-        self.browser.get("http://localhost:8000")
+        self.browser.get(self.live_server_url)
 
         # She notices the page title and header mention to-do lists
         # Using self.assertIn for better error messages
